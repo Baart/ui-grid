@@ -1,15 +1,15 @@
 {
-  "name": "angular-ui-grid",
-  "version": "3.0.6",
+  "name": "angular-ui-grid-bam",
+  "version": "3.0.6-fix",
   "homepage": "http://ui-grid.info",
   "repository": {
     "type": "git",
-    "url": "https://github.com/angular-ui/ui-grid.info.git"
+    "url": "https://github.com/Baart/ui-grid.git"
   },
   "authors": [
     "__Contributors__"
   ],
-  "description": "AngularJS data grid",
+  "description": "AngularJS data grid with minor fix",
   "keywords": [
     "angular",
     "grid"

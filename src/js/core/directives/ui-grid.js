@@ -1,3 +1,4 @@
+var lastValue;
 (function () {
   'use strict';
 
@@ -44,10 +45,10 @@
           deregFunctions.push( $scope.$parent.$watch($scope.uiGrid.data, dataWatchFunction) );
           deregFunctions.push( $scope.$parent.$watch(function() {
             if ( self.grid.appScope[$scope.uiGrid.data] ){
-              return self.grid.appScope[$scope.uiGrid.data].length; 
+              return self.grid.appScope[$scope.uiGrid.data].length;
             } else {
               return undefined;
-            } 
+            }
           }, dataWatchFunction) );
         } else {
           deregFunctions.push( $scope.$parent.$watch(function() { return $scope.uiGrid.data; }, dataWatchFunction) );
@@ -63,7 +64,7 @@
         }
         deregFunctions.push( $scope.$parent.$watchCollection(function() { return $scope.uiGrid.columnDefs; }, columnDefsWatchFunction) );
       }
-      
+
 
       function columnDefsWatchFunction(n, o) {
         if (n && n !== o) {
@@ -78,10 +79,11 @@
         }
       }
 
+      var queuedData = [];
       function dataWatchFunction(newData) {
         // gridUtil.logDebug('dataWatch fired');
         var promises = [];
-        
+
         if ( self.grid.options.fastWatch ){
           if (angular.isString($scope.uiGrid.data)) {
             newData = self.grid.appScope[$scope.uiGrid.data];
@@ -89,7 +91,7 @@
             newData = $scope.uiGrid.data;
           }
         }
-        
+
         if (newData) {
           if (
             // If we have no columns (i.e. columns length is either 0 or equal to the number of row header columns, which don't count because they're created automatically)
@@ -104,6 +106,7 @@
             // ... then build the column definitions from the data that we have
             self.grid.buildColumnDefsFromData(newData);
           }
+          queuedData.push(newData)
 
           // If we either have some columns defined, or some data defined
           if (self.grid.options.columnDefs.length > 0 || newData.length > 0) {
@@ -113,8 +116,14 @@
                 self.grid.preCompileCellTemplates();
               }));
           }
+          lastValue = newData.length;
 
           $q.all(promises).then(function() {
+            if(queuedData.length == 0) {
+                console.log('dodged a bug')
+                return;
+            }
+            queuedData = []; // discard deprecated data
             self.grid.modifyRows(newData)
               .then(function () {
                 // if (self.viewport) {
@@ -288,7 +297,7 @@ function uiGridDirective($compile, $templateCache, $timeout, $window, gridUtil, 
             var contentHeight = grid.options.minRowsToShow * grid.options.rowHeight;
             var headerHeight = grid.options.showHeader ? grid.options.headerRowHeight : 0;
             var footerHeight = grid.calcFooterHeight();
-            
+
             var scrollbarHeight = 0;
             if (grid.options.enableHorizontalScrollbar === uiGridConstants.scrollbars.ALWAYS) {
               scrollbarHeight = gridUtil.getScrollbarWidth();
